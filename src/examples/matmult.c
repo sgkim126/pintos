@@ -1,9 +1,9 @@
-/* matmult.c 
+/* matmult.c
 
    Test program to do matrix multiplication on large arrays.
- 
+
    Intended to stress virtual memory system.
-   
+
    Ideally, we could read the matrices off of the file system,
    and store the result back to the file system!
  */

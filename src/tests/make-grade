@@ -134,7 +134,7 @@ for my $test (@failures) {
 
     if (open (OUTPUT, '<', "$test.output")) {
 	print "\nOUTPUT FROM $test:\n\n";
-    
+
 	my ($panics, $boots) = (0, 0);
 	while (<OUTPUT>) {
 	    if (/PANIC/ && ++$panics > 2) {

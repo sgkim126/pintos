@@ -326,6 +326,37 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
+static bool
+less_for_sleeping_thread (const struct list_elem *a_,
+                                      const struct list_elem *b_,
+                                      void *aux UNUSED)
+{
+  const struct thread const *a = list_entry (a_, const struct thread, elem);
+  const struct thread const *b = list_entry (b_, const struct thread, elem);
+
+  return a->wakeup_on_tick < b->wakeup_on_tick;
+}
+
+void
+thread_sleep (int64_t wakeup_on_tick)
+{
+  struct thread *cur = thread_current ();
+  enum intr_level old_level;
+
+  ASSERT (!intr_context ());
+
+  old_level = intr_disable ();
+
+  cur->wakeup_on_tick = wakeup_on_tick;
+
+  list_insert_ordered (&sleeping_list, &cur->elem, less_for_sleeping_thread,
+                       NULL);
+
+  thread_block ();
+
+  intr_set_level (old_level);
+}
+
 /* Invoke function 'func' on all threads, passing along 'aux'.
    This function must be called with interrupts off. */
 void

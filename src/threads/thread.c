@@ -121,6 +121,26 @@ thread_start (void)
   sema_down (&idle_started);
 }
 
+void
+thread_wakeup (const int64_t current_ticks)
+{
+  ASSERT (intr_get_level () == INTR_OFF);
+
+  while (!list_empty (&sleeping_list))
+    {
+      const struct thread const *t = list_entry (list_front (&sleeping_list),
+                                                 struct thread, elem);
+
+      // Because the threads in the sleeping list are in the order
+      // wakeup_on_tick, we can check the first of the sleeping_list.
+      if (current_ticks < t->wakeup_on_tick)
+        break;
+
+      struct list_elem *elem = list_pop_front (&sleeping_list);
+      list_push_back (&ready_list, elem);
+    }
+}
+
 /* Called by the timer interrupt handler at each timer tick.
    Thus, this function runs in an external interrupt context. */
 void

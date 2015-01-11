@@ -66,6 +66,7 @@ static void kernel_thread (thread_func *, void *aux);
 
 static void idle (void *aux UNUSED);
 static struct thread *running_thread (void);
+static bool is_current_thread_has_the_top_priority (void);
 static struct thread *next_thread_to_run (void);
 static void init_thread (struct thread *, const char *name, int priority);
 static bool is_thread (struct thread *) UNUSED;
@@ -233,6 +234,10 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+
+  if (!is_current_thread_has_the_top_priority ())
+    thread_yield ();
+
   return tid;
 }
 
@@ -399,6 +404,9 @@ void
 thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
+
+  if (!is_current_thread_has_the_top_priority ())
+    thread_yield ();
 }
 
 /* Returns the current thread's priority. */
@@ -554,6 +562,17 @@ static struct list_elem *
 pick_highest_priority_elem_in_ready_queue (void)
 {
   return list_max (&ready_list, less_highest_priority, NULL);
+}
+
+static bool
+is_current_thread_has_the_top_priority (void)
+{
+  struct list_elem *highest_priority_elem =
+    pick_highest_priority_elem_in_ready_queue ();
+  struct thread *highest_priority_thread =
+    list_entry (highest_priority_elem, struct thread, elem);
+
+  return thread_current ()->priority >= highest_priority_thread->priority;
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

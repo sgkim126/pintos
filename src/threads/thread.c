@@ -550,6 +550,12 @@ less_highest_priority (const struct list_elem *a_, const struct list_elem *b_,
   return a->priority < b->priority;
 }
 
+static struct list_elem *
+pick_highest_priority_elem_in_ready_queue (void)
+{
+  return list_max (&ready_list, less_highest_priority, NULL);
+}
+
 /* Chooses and returns the next thread to be scheduled.  Should
    return a thread from the run queue, unless the run queue is
    empty.  (If the running thread can continue running, then it
@@ -562,9 +568,8 @@ next_thread_to_run (void)
     return idle_thread;
 
   {
-    struct list_elem *highest_priority_elem = list_max (&ready_list,
-                                                        less_highest_priority,
-                                                        NULL);
+    struct list_elem *highest_priority_elem =
+      pick_highest_priority_elem_in_ready_queue ();
     struct thread *highest_priority_thread =
       list_entry (highest_priority_elem, struct thread, elem);
 

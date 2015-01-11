@@ -399,6 +399,12 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
+static int
+priority_of_thread (const struct thread const *t)
+{
+  return t->priority;
+}
+
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority)
@@ -413,7 +419,7 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void)
 {
-  return thread_current ()->priority;
+  return priority_of_thread (thread_current ());
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -555,7 +561,7 @@ less_highest_priority (const struct list_elem *a_, const struct list_elem *b_,
   const struct thread const *a = list_entry (a_, const struct thread, elem);
   const struct thread const *b = list_entry (b_, const struct thread, elem);
 
-  return a->priority < b->priority;
+  return priority_of_thread (a) < priority_of_thread (b);
 }
 
 static struct list_elem *
@@ -572,7 +578,9 @@ is_current_thread_has_the_top_priority (void)
   struct thread *highest_priority_thread =
     list_entry (highest_priority_elem, struct thread, elem);
 
-  return thread_current ()->priority >= highest_priority_thread->priority;
+  int current_thread_priority = priority_of_thread (thread_current ());
+  int highest_thread_priority = priority_of_thread (highest_priority_thread);
+  return current_thread_priority >= highest_thread_priority;
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
